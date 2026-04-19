@@ -4,7 +4,6 @@ from launch.substitutions import Command, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import IncludeLaunchDescription
-from moveit_configs_utils import MoveItConfigsBuilder
 
 
 def generate_launch_description():
@@ -29,34 +28,6 @@ def generate_launch_description():
         package="robot_state_publisher",
         executable="robot_state_publisher",
         parameters=[{"robot_description": robot_description, "use_sim_time": True}],
-    )
-
-    # Moveit
-    moveit_config = (
-        MoveItConfigsBuilder("kernwald", package_name="kernwalt_moveit_config")
-        .robot_description()
-        .robot_description_semantic()
-        .trajectory_execution(file_path="config/moveit_controllers.yaml")
-        .robot_description_kinematics(file_path="config/kinematics.yaml")
-        .planning_pipelines(pipelines=["ompl"])
-        .planning_scene_monitor(
-            publish_robot_description=True, publish_robot_description_semantic=True
-        )
-        .to_moveit_configs()
-    )
-
-    move_group = Node(
-        package="moveit_ros_move_group",
-        executable="move_group",
-        output="screen",
-        parameters=[moveit_config.to_dict(), {"use_sim_time": True}],
-    )
-
-    commander = Node(
-        package="kernwald_commander_cpp",
-        executable="commander",
-        output="screen",
-        parameters=[moveit_config.to_dict(), {"use_sim_time": True}],
     )
 
     # Gazebo
@@ -85,20 +56,14 @@ def generate_launch_description():
     )
 
     # Controllers
-    joint_state_broadcaster = Node(
+    controllers = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_state_broadcaster"],
-    )
-
-    arm_controller = Node(
-        package="controller_manager", executable="spawner", arguments=["arm_controller"]
-    )
-
-    gripper_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["gripper_controller"],
+        arguments=[
+            "joint_state_broadcaster",
+            "arm_controller",
+            "gripper_controller",
+        ],
     )
 
     return LaunchDescription(
@@ -107,10 +72,6 @@ def generate_launch_description():
             gz_sim,
             bridge,
             kernwald_spawner,
-            joint_state_broadcaster,
-            arm_controller,
-            gripper_controller,
-            # move_group,
-            # commander,
+            controllers,
         ]
     )

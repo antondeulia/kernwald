@@ -1,5 +1,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <moveit/move_group_interface/move_group_interface.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+
+#include <thread>
 
 using MoveGroupInterface = moveit::planning_interface::MoveGroupInterface;
 
@@ -20,6 +23,7 @@ public:
     {
         node_ = node;
         arm_ = std::make_shared<MoveGroupInterface>(node_, "arm");
+        arm_->startStateMonitor();
         arm_->setMaxVelocityScalingFactor(1.0);
         arm_->setMaxAccelerationScalingFactor(1.0);
 
@@ -58,14 +62,29 @@ public:
         goToPoseTarget(pre_grasp_);
     }
 
+    void moveArmToNamedTarget(const std::string &target_name)
+    {
+        arm_->setStartStateToCurrentState();
+        arm_->setNamedTarget(target_name);
+        planAndExecute(arm_);
+    }
+
 private:
-    void planAndExecute(const std::shared_ptr<MoveGroupInterface> &interface)
+    void planAndExecute(
+        const std::shared_ptr<MoveGroupInterface> &interface)
     {
         MoveGroupInterface::Plan plan;
-        bool success = (interface->plan(plan)) == moveit::core::MoveItErrorCode::SUCCESS;
-        if (success)
+
+        const auto plan_result = interface->plan(plan);
+        if (plan_result != moveit::core::MoveItErrorCode::SUCCESS)
         {
-            interface->execute(plan);
+            return;
+        }
+
+        const auto execute_result = interface->execute(plan);
+        if (execute_result != moveit::core::MoveItErrorCode::SUCCESS)
+        {
+            return;
         }
     }
 
@@ -81,11 +100,25 @@ int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
 
-    auto node = std::make_shared<rclcpp::Node>("commander");
+    auto node = std::make_shared<rclcpp::Node>(
+        "commander",
+        rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
+
+    rclcpp::executors::SingleThreadedExecutor executor;
+    executor.add_node(node);
+    std::thread executor_thread([&executor]()
+                                { executor.spin(); });
+
     auto commander = Commander(node);
+    const auto target_name = argc > 1 ? std::string(argv[1]) : std::string("pose_1");
 
-    commander.moveToPreGrasp();
+    commander.moveArmToNamedTarget(target_name);
 
+    executor.cancel();
+    if (executor_thread.joinable())
+    {
+        executor_thread.join();
+    }
     rclcpp::shutdown();
     return 0;
 }
