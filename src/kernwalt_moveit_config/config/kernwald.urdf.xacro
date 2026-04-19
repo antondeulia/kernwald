@@ -4,11 +4,4 @@
 
     <!-- Import kernwald urdf file -->
     <xacro:include filename="$(find kernwald_description)/urdf/kernwald.xacro" />
-
-    <!-- Import control_xacro -->
-    <xacro:include filename="kernwald.ros2_control.xacro" />
-
-
-    <xacro:kernwald_ros2_control name="FakeSystem" initial_positions_file="$(arg initial_positions_file)"/>
-
 </robot>

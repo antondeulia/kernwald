@@ -8,6 +8,7 @@
     </joint>
 
     <link name="gripper_base_link">
+        <xacro:box_inertial mass="0.25" x="0.2" y="0.06" z="0.02" origin_xyz="0 0 0.01" />
         <visual>
             <geometry>
                 <box size="0.2 0.06 0.02" />
@@ -28,6 +29,7 @@
     </joint>
 
     <link name="right_finger_link">
+        <xacro:box_inertial mass="0.08" x="0.02" y="0.06" z="0.08" origin_xyz="0 0 0.04" />
         <visual>
             <geometry>
                 <box size="0.02 0.06 0.08" />
@@ -53,6 +55,7 @@
     </joint>
 
     <link name="left_finger_link">
+        <xacro:box_inertial mass="0.08" x="0.02" y="0.06" z="0.08" origin_xyz="0 0 0.04" />
         <visual>
             <geometry>
                 <box size="0.02 0.06 0.08" />

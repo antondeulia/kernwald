@@ -25,7 +25,7 @@ public:
 
         gripper_ = std::make_shared<MoveGroupInterface>(node_, "gripper");
 
-        pre_grasp_ = {0.30, 0.00, 0.20, 0.0, 3.14, 0.0};
+        pre_grasp_ = {0.7, 0.0, 0.4, 3.14, 0.0, 0.0};
         place_ = {0.20, 0.20, 0.20, 0.0, 3.14, 0.0};
     }
 

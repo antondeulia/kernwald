@@ -3,9 +3,25 @@
 <robot name="kernwald" xmlns:xacro="http://www.ros.org/wiki/xacro">
     <!-- Includes -->
     <xacro:include filename="common_properties.xacro" />
+    <xacro:include filename="kernwald.ros2_control.xacro" />
+
+    <xacro:arg name="use_gazebo" default="false" />
+    <xacro:arg name="controllers_file" default="" />
+
     <xacro:include filename="gripper.xacro" />
+    <xacro:kernwald_ros2_control use_gazebo="$(arg use_gazebo)" />
+
+    <!-- Base -->
+    <link name="base_footprint" />
+
+    <joint name="base_footprint_joint" type="fixed">
+        <parent link="base_footprint" />
+        <child link="base_link" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint>
 
     <link name="base_link">
+        <xacro:box_inertial mass="5.0" x="0.4" y="0.4" z="0.1" origin_xyz="0 0 0.05" />
         <visual>
             <geometry>
                 <box size="0.4 0.4 0.1" />
@@ -22,7 +38,6 @@
     </link>
 
     <!-- Joint 1 -->
-
     <joint name="joint_1" type="revolute">
         <parent link="base_link" />
         <child link="shoulder_link" />
@@ -32,6 +47,7 @@
     </joint>
 
     <link name="shoulder_link">
+        <xacro:cylinder_inertial mass="2.0" radius="0.1" length="0.5" origin_xyz="0 0 0.25" />
         <visual>
             <geometry>
                 <cylinder length="0.5" radius="0.1" />
@@ -57,6 +73,7 @@
     </joint>
 
     <link name="arm_link">
+        <xacro:cylinder_inertial mass="1.5" radius="0.05" length="0.6" origin_xyz="0 0 0.3" />
         <visual>
             <geometry>
                 <cylinder length="0.6" radius="0.05" />
@@ -82,6 +99,7 @@
     </joint>
 
     <link name="elbow_link">
+        <xacro:cylinder_inertial mass="0.5" radius="0.05" length="0.1" origin_xyz="0 0 0.05" />
         <visual>
             <geometry>
                 <cylinder length="0.1" radius="0.05" />
@@ -107,6 +125,7 @@
     </joint>
 
     <link name="forearm_link">
+        <xacro:cylinder_inertial mass="1.0" radius="0.05" length="0.5" origin_xyz="0 0 0.25" />
         <visual>
             <geometry>
                 <cylinder length="0.5" radius="0.05" />
@@ -132,6 +151,7 @@
     </joint>
 
     <link name="wrist_link">
+        <xacro:box_inertial mass="0.4" x="0.1" y="0.1" z="0.05" origin_xyz="0 0 0.025" />
         <visual>
             <geometry>
                 <box size="0.1 0.1 0.05" />
@@ -157,6 +177,7 @@
     </joint>
 
     <link name="hand_link">
+        <xacro:box_inertial mass="0.2" x="0.1" y="0.1" z="0.02" origin_xyz="0 0 0.01" />
         <visual>
             <geometry>
                 <box size="0.1 0.1 0.02" />
@@ -179,8 +200,17 @@
         <origin xyz="0 0 0.02" rpy="0 0 0" />
     </joint>
 
-    <link name="tool_link" />
+    <link name="tool_link">
+        <xacro:box_inertial mass="0.05" x="0.02" y="0.02" z="0.02" origin_xyz="0 0 0" />
+    </link>
 
-    <!-- Import control_xacro -->
-    <xacro:include filename="kernwald.ros2_control.xacro" />
+    <!-- Gazebo -->
+    <xacro:if value="$(arg use_gazebo)">
+        <gazebo>
+            <plugin filename="libgz_ros2_control-system.so"
+                name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+                <parameters>$(arg controllers_file)</parameters>
+            </plugin>
+        </gazebo>
+    </xacro:if>
 </robot>
