@@ -1,0 +1,23 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: kernwald_description
+    relative_path: urdf/kernwald.xacro
+  srdf:
+    relative_path: config/kernwald.srdf
+  package_settings:
+    author_name: Anton Deulia
+    author_email: anton.deulia06@gmail.com
+    generated_timestamp: 1776545596
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
