@@ -35,7 +35,12 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             PathJoinSubstitution([ros_gz_pkg, "launch", "gz_sim.launch.py"])
         ),
-        launch_arguments={"gz_args": ["-r ", world]}.items(),
+        launch_arguments={
+            "gz_args": [
+                "-r ",
+                world,
+            ]
+        }.items(),
     )
 
     # ros_gz_bridges
