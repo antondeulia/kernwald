@@ -3,7 +3,7 @@ from launch_ros.actions import Node
 from launch.substitutions import Command, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.actions import IncludeLaunchDescription, TimerAction
+from launch.actions import IncludeLaunchDescription
 from moveit_configs_utils import MoveItConfigsBuilder
 
 
@@ -13,9 +13,6 @@ def generate_launch_description():
     ros_gz_pkg = FindPackageShare("ros_gz_sim")
 
     world = PathJoinSubstitution([bringup_pkg, "worlds", "world.sdf"])
-    controllers_file = PathJoinSubstitution(
-        [bringup_pkg, "config", "ros2_controllers.yaml"]
-    )
 
     robot_description = Command(
         [
@@ -25,8 +22,6 @@ def generate_launch_description():
             " ",
             "use_gazebo:=true",
             " ",
-            "controllers_file:=",
-            controllers_file,
         ]
     )
 
@@ -57,16 +52,11 @@ def generate_launch_description():
         parameters=[moveit_config.to_dict(), {"use_sim_time": True}],
     )
 
-    commander = TimerAction(
-        period=8.0,
-        actions=[
-            Node(
-                package="kernwald_commander_cpp",
-                executable="commander",
-                output="screen",
-                parameters=[moveit_config.to_dict(), {"use_sim_time": True}],
-            )
-        ],
+    commander = Node(
+        package="kernwald_commander_cpp",
+        executable="commander",
+        output="screen",
+        parameters=[moveit_config.to_dict(), {"use_sim_time": True}],
     )
 
     # Gazebo
@@ -120,7 +110,7 @@ def generate_launch_description():
             joint_state_broadcaster,
             arm_controller,
             gripper_controller,
-            move_group,
-            commander,
+            # move_group,
+            # commander,
         ]
     )

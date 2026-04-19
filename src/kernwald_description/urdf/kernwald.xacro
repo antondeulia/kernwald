@@ -6,7 +6,6 @@
     <xacro:include filename="kernwald.ros2_control.xacro" />
 
     <xacro:arg name="use_gazebo" default="false" />
-    <xacro:arg name="controllers_file" default="" />
 
     <xacro:include filename="gripper.xacro" />
     <xacro:kernwald_ros2_control use_gazebo="$(arg use_gazebo)" />
@@ -205,12 +204,10 @@
     </link>
 
     <!-- Gazebo -->
-    <xacro:if value="$(arg use_gazebo)">
-        <gazebo>
-            <plugin filename="libgz_ros2_control-system.so"
-                name="gz_ros2_control::GazeboSimROS2ControlPlugin">
-                <parameters>$(arg controllers_file)</parameters>
-            </plugin>
-        </gazebo>
-    </xacro:if>
+    <gazebo>
+        <plugin filename="libgz_ros2_control-system.so"
+            name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+            <parameters>$(find kernwald_bringup)/config/controllers.yaml</parameters>
+        </plugin>
+    </gazebo>
 </robot>
