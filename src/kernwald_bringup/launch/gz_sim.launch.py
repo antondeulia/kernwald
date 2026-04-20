@@ -1,13 +1,20 @@
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
-from launch.substitutions import Command, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.actions import IncludeLaunchDescription
 from moveit_configs_utils import MoveItConfigsBuilder
 
 
 def generate_launch_description():
+    use_gazebo = LaunchConfiguration("use_gazebo")
+    declare_use_gazebo = DeclareLaunchArgument(
+        "use_gazebo",
+        default_value="true",
+        description="Enable Gazebo ros2_control plugin in robot_description.",
+    )
+
     bringup_pkg = FindPackageShare("kernwald_bringup")
     description_pkg = FindPackageShare("kernwald_description")
     ros_gz_pkg = FindPackageShare("ros_gz_sim")
@@ -21,14 +28,15 @@ def generate_launch_description():
             " ",
             PathJoinSubstitution([description_pkg, "urdf", "kernwald.xacro"]),
             " ",
-            "use_gazebo:=true",
+            "use_gazebo:=",
+            use_gazebo,
             " ",
         ]
     )
 
     moveit_config = (
         MoveItConfigsBuilder("kernwald", package_name="kernwalt_moveit_config")
-        .robot_description()
+        .robot_description(mappings={"use_gazebo": use_gazebo})
         .robot_description_semantic()
         .trajectory_execution(file_path="config/moveit_controllers.yaml")
         .robot_description_kinematics(file_path="config/kinematics.yaml")
@@ -36,7 +44,7 @@ def generate_launch_description():
         .planning_scene_monitor(
             # RViz MotionPlanning needs both URDF and SRDF on topics when RViz
             # is launched outside moveit_rviz.launch.py.
-            publish_robot_description=True,
+            publish_robot_description=False,
             publish_robot_description_semantic=True,
         )
         .to_moveit_configs()
@@ -117,6 +125,7 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
+            declare_use_gazebo,
             robot_state_publisher,
             gz_sim,
             bridge,
