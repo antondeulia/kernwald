@@ -22,6 +22,7 @@ public:
     Commander(std::shared_ptr<rclcpp::Node> node)
     {
         node_ = node;
+
         arm_ = std::make_shared<MoveGroupInterface>(node_, "arm");
         arm_->startStateMonitor();
         arm_->setMaxVelocityScalingFactor(1.0);
@@ -57,16 +58,26 @@ public:
         planAndExecute(arm_);
     }
 
-    void moveToPreGrasp()
-    {
-        goToPoseTarget(pre_grasp_);
-    }
-
     void moveArmToNamedTarget(const std::string &target_name)
     {
         arm_->setStartStateToCurrentState();
         arm_->setNamedTarget(target_name);
         planAndExecute(arm_);
+    }
+
+    // Gripper
+    void openGripper()
+    {
+        gripper_->setStartStateToCurrentState();
+        gripper_->setNamedTarget("open");
+        planAndExecute(gripper_);
+    }
+
+    void closeGripper()
+    {
+        gripper_->setStartStateToCurrentState();
+        gripper_->setNamedTarget("closed");
+        planAndExecute(gripper_);
     }
 
 private:
@@ -113,6 +124,8 @@ int main(int argc, char **argv)
     const auto target_name = argc > 1 ? std::string(argv[1]) : std::string("pose_1");
 
     commander.moveArmToNamedTarget(target_name);
+    commander.closeGripper();
+    commander.openGripper();
 
     executor.cancel();
     if (executor_thread.joinable())

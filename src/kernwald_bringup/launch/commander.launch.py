@@ -17,8 +17,7 @@ def generate_launch_description():
         .robot_description_kinematics(file_path="config/kinematics.yaml")
         .planning_pipelines(pipelines=["ompl"])
         .planning_scene_monitor(
-            publish_robot_description=True,
-            publish_robot_description_semantic=True,
+            publish_robot_description=True, publish_robot_description_semantic=False
         )
         .to_moveit_configs()
     )
