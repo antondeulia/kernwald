@@ -71,8 +71,9 @@ def generate_launch_description():
     bridge = Node(
         package="ros_gz_bridge",
         executable="parameter_bridge",
-        arguments=["/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock"],
-        parameters=[{"use_sim_time": True}],
+        arguments=[
+            "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
+        ],
     )
 
     # Robot spawner
@@ -84,14 +85,22 @@ def generate_launch_description():
     )
 
     # Controllers
-    controllers = Node(
+    joint_state_broadcaster = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=[
-            "joint_state_broadcaster",
-            "arm_controller",
-            "gripper_controller",
-        ],
+        arguments=["joint_state_broadcaster"],
+    )
+
+    arm_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["arm_controller"],
+    )
+
+    gripper_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["gripper_controller"],
     )
 
     rviz2 = Node(
@@ -112,7 +121,9 @@ def generate_launch_description():
             gz_sim,
             bridge,
             kernwald_spawner,
-            controllers,
+            joint_state_broadcaster,
+            arm_controller,
+            gripper_controller,
             rviz2,
             move_group,
         ]
