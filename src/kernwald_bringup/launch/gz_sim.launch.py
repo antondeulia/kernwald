@@ -4,6 +4,7 @@ from launch.substitutions import Command, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import IncludeLaunchDescription
+from moveit_configs_utils import MoveItConfigsBuilder
 
 
 def generate_launch_description():
@@ -11,6 +12,7 @@ def generate_launch_description():
     description_pkg = FindPackageShare("kernwald_description")
     ros_gz_pkg = FindPackageShare("ros_gz_sim")
 
+    rviz2_config = PathJoinSubstitution([bringup_pkg, "rviz2", "config.rviz"])
     world = PathJoinSubstitution([bringup_pkg, "worlds", "world.sdf"])
 
     robot_description = Command(
@@ -22,6 +24,28 @@ def generate_launch_description():
             "use_gazebo:=true",
             " ",
         ]
+    )
+
+    moveit_config = (
+        MoveItConfigsBuilder("kernwald", package_name="kernwalt_moveit_config")
+        .robot_description()
+        .robot_description_semantic()
+        .trajectory_execution(file_path="config/moveit_controllers.yaml")
+        .robot_description_kinematics(file_path="config/kinematics.yaml")
+        .planning_pipelines(pipelines=["ompl"])
+        .planning_scene_monitor(
+            # RViz MotionPlanning needs both URDF and SRDF on topics when RViz
+            # is launched outside moveit_rviz.launch.py.
+            publish_robot_description=True,
+            publish_robot_description_semantic=True,
+        )
+        .to_moveit_configs()
+    )
+
+    move_group = Node(
+        package="moveit_ros_move_group",
+        executable="move_group",
+        parameters=[moveit_config.to_dict(), {"use_sim_time": True}],
     )
 
     robot_state_publisher = Node(
@@ -48,7 +72,6 @@ def generate_launch_description():
         package="ros_gz_bridge",
         executable="parameter_bridge",
         arguments=["/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock"],
-        output="screen",
         parameters=[{"use_sim_time": True}],
     )
 
@@ -71,6 +94,18 @@ def generate_launch_description():
         ],
     )
 
+    rviz2 = Node(
+        package="rviz2",
+        executable="rviz2",
+        arguments=["-d", rviz2_config],
+        parameters=[
+            {"robot_description": robot_description},
+            moveit_config.robot_description_semantic,
+            moveit_config.robot_description_kinematics,
+            {"use_sim_time": True},
+        ],
+    )
+
     return LaunchDescription(
         [
             robot_state_publisher,
@@ -78,5 +113,7 @@ def generate_launch_description():
             bridge,
             kernwald_spawner,
             controllers,
+            rviz2,
+            move_group,
         ]
     )

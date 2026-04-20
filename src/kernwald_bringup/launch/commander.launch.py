@@ -17,7 +17,10 @@ def generate_launch_description():
         .robot_description_kinematics(file_path="config/kinematics.yaml")
         .planning_pipelines(pipelines=["ompl"])
         .planning_scene_monitor(
-            publish_robot_description=True, publish_robot_description_semantic=False
+            # RViz MotionPlanning needs both URDF and SRDF on topics when RViz
+            # is launched outside moveit_rviz.launch.py.
+            publish_robot_description=True,
+            publish_robot_description_semantic=True,
         )
         .to_moveit_configs()
     )
@@ -29,27 +32,16 @@ def generate_launch_description():
         parameters=[moveit_config.to_dict(), {"use_sim_time": True}],
     )
 
-    commander = Node(
-        package="kernwald_commander_cpp",
-        executable="commander",
-        output="screen",
-        arguments=[target],
-        parameters=[moveit_config.to_dict(), {"use_sim_time": True}],
-    )
+    # commander = Node(
+    #     package="kernwald_commander_cpp",
+    #     executable="commander",
+    #     output="screen",
+    #     arguments=[target],
+    #     parameters=[moveit_config.to_dict(), {"use_sim_time": True}],
+    # )
 
     return LaunchDescription(
         [
-            DeclareLaunchArgument(
-                "target",
-                default_value="pose_1",
-                description="Named arm target from the MoveIt SRDF.",
-            ),
             move_group,
-            RegisterEventHandler(
-                OnProcessStart(
-                    target_action=move_group,
-                    on_start=[commander],
-                )
-            ),
         ]
     )
