@@ -46,14 +46,27 @@ def generate_launch_description():
             # is launched outside moveit_rviz.launch.py.
             publish_robot_description=False,
             publish_robot_description_semantic=True,
+            publish_planning_scene=True,
+            publish_geometry_updates=True,
+            publish_state_updates=True,
+            publish_transforms_updates=True,
         )
+        .sensors_3d(file_path="config/sensors_3d.yaml")
         .to_moveit_configs()
     )
 
     move_group = Node(
         package="moveit_ros_move_group",
         executable="move_group",
-        parameters=[moveit_config.to_dict(), {"use_sim_time": True}],
+        parameters=[
+            moveit_config.to_dict(),
+            {
+                "use_sim_time": True,
+                # Keep a stable world frame for OctoMap integration from depth points.
+                "octomap_frame": "base_footprint",
+                "octomap_resolution": 0.03,
+            },
+        ],
     )
 
     robot_state_publisher = Node(
@@ -76,11 +89,29 @@ def generate_launch_description():
     )
 
     # ros_gz_bridges
-    bridge = Node(
+    clock_bridge = Node(
         package="ros_gz_bridge",
         executable="parameter_bridge",
         arguments=[
             "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
+        ],
+    )
+
+    sensor_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            "/depth_camera@sensor_msgs/msg/Image[gz.msgs.Image",
+            "/depth_camera/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked",
+        ],
+        parameters=[
+            {
+                "override_frame_id": "depth_camera_link",
+                # Avoid PointCloud2 backlog and long latency in MoveIt/RViz.
+                "qos_overrides./depth_camera/points.publisher.reliability": "best_effort",
+                "qos_overrides./depth_camera/points.publisher.history": "keep_last",
+                "qos_overrides./depth_camera/points.publisher.depth": 1,
+            }
         ],
     )
 
@@ -128,7 +159,8 @@ def generate_launch_description():
             declare_use_gazebo,
             robot_state_publisher,
             gz_sim,
-            bridge,
+            clock_bridge,
+            sensor_bridge,
             kernwald_spawner,
             joint_state_broadcaster,
             arm_controller,

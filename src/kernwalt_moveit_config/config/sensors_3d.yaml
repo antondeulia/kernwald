@@ -1,0 +1,13 @@
+sensors:
+  - depth_camera_points
+
+depth_camera_points:
+  sensor_plugin: occupancy_map_monitor/PointCloudOctomapUpdater
+  point_cloud_topic: /depth_camera/points
+  max_range: 4.0
+  point_subsample: 1
+  # Inflate occupied space so sparse scans still produce conservative collisions.
+  padding_offset: 0.08
+  padding_scale: 1.2
+  max_update_rate: 10.0
+  filtered_cloud_topic: /moveit/filtered_cloud
