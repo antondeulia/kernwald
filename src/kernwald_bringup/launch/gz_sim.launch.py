@@ -35,7 +35,7 @@ def generate_launch_description():
     )
 
     moveit_config = (
-        MoveItConfigsBuilder("kernwald", package_name="kernwalt_moveit_config")
+        MoveItConfigsBuilder("kernwald", package_name="kernwald_moveit_config")
         .robot_description(mappings={"use_gazebo": use_gazebo})
         .robot_description_semantic()
         .trajectory_execution(file_path="config/moveit_controllers.yaml")
@@ -102,12 +102,16 @@ def generate_launch_description():
         executable="parameter_bridge",
         arguments=[
             "/depth_camera@sensor_msgs/msg/Image[gz.msgs.Image",
+            "/depth_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
             "/depth_camera/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked",
         ],
         parameters=[
             {
                 "override_frame_id": "depth_camera_link",
                 # Avoid PointCloud2 backlog and long latency in MoveIt/RViz.
+                "qos_overrides./depth_camera/camera_info.publisher.reliability": "best_effort",
+                "qos_overrides./depth_camera/camera_info.publisher.history": "keep_last",
+                "qos_overrides./depth_camera/camera_info.publisher.depth": 1,
                 "qos_overrides./depth_camera/points.publisher.reliability": "best_effort",
                 "qos_overrides./depth_camera/points.publisher.history": "keep_last",
                 "qos_overrides./depth_camera/points.publisher.depth": 1,

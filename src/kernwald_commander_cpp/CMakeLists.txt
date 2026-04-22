@@ -9,15 +9,11 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 
-add_executable(test_moveit src/test_moveit.cpp)
-ament_target_dependencies(test_moveit rclcpp moveit_ros_planning_interface)
-
 add_executable(commander src/commander.cpp)
 ament_target_dependencies(commander rclcpp moveit_ros_planning_interface)
 
 
 install(TARGETS
-  test_moveit
   commander
   DESTINATION lib/${PROJECT_NAME}/
 )
