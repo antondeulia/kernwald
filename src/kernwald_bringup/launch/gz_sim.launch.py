@@ -101,9 +101,16 @@ def generate_launch_description():
         package="ros_gz_bridge",
         executable="parameter_bridge",
         arguments=[
-            "/depth_camera@sensor_msgs/msg/Image[gz.msgs.Image",
-            "/depth_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
-            "/depth_camera/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked",
+            "/rgbd_camera/image@sensor_msgs/msg/Image[gz.msgs.Image",
+            "/rgbd_camera/depth_image@sensor_msgs/msg/Image[gz.msgs.Image",
+            "/rgbd_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
+            "/rgbd_camera/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked",
+        ],
+        remappings=[
+            ("/rgbd_camera/depth_image", "/depth_camera"),
+            ("/rgbd_camera/camera_info", "/depth_camera/camera_info"),
+            ("/rgbd_camera/points", "/depth_camera/points"),
+            ("/rgbd_camera/image", "/rgb_camera"),
         ],
         parameters=[
             {
