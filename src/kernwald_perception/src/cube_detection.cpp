@@ -34,30 +34,30 @@ public:
 private:
     void depth_img_callback(const ImageMsg::SharedPtr msg)
     {
-        // RCLCPP_INFO_THROTTLE(
-        //     this->get_logger(),
-        //     *this->get_clock(),
-        //     2000,
-        //     "Depth image: %ux%u, encoding=%s, frame_id=%s",
-        //     msg->width,
-        //     msg->height,
-        //     msg->encoding.c_str(),
-        //     msg->header.frame_id.c_str()
-        // );
+        RCLCPP_INFO_THROTTLE(
+            this->get_logger(),
+            *this->get_clock(),
+            2000,
+            "Depth image: %ux%u, encoding=%s, frame_id=%s",
+            msg->width,
+            msg->height,
+            msg->encoding.c_str(),
+            msg->header.frame_id.c_str()
+        );
     }
 
     void rgb_img_callback(const ImageMsg::SharedPtr msg)
     {
-        // RCLCPP_INFO_THROTTLE(
-        //     this->get_logger(),
-        //     *this->get_clock(),
-        //     2000,
-        //     "RGB image: %ux%u, encoding=%s, frame_id=%s",
-        //     msg->width,
-        //     msg->height,
-        //     msg->encoding.c_str(),
-        //     msg->header.frame_id.c_str()
-        // );
+        RCLCPP_INFO_THROTTLE(
+            this->get_logger(),
+            *this->get_clock(),
+            2000,
+            "RGB image: %ux%u, encoding=%s, frame_id=%s",
+            msg->width,
+            msg->height,
+            msg->encoding.c_str(),
+            msg->header.frame_id.c_str()
+        );
     }
 
     void camera_info_callback(const CameraInfoMsg::SharedPtr msg)
